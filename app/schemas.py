@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import date
 from typing import Optional
 
+# --- USUARIOS ---
 class UserBase(BaseModel):
     full_name: str
     email: str
@@ -14,9 +15,9 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id_user: int
     class Config:
-          from_attributes = True
+        from_attributes = True
 
-
+# --- TAREAS ---
 class TaskBase(BaseModel):
     tasks_name: str
     created: Optional[date] = None
@@ -25,8 +26,11 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     user_id: int
 
+class TaskUpdate(TaskBase):
+    pass
+
 class TaskResponse(TaskBase):
     id_task: int
     user_id: int
     class Config:
-          from_attributes = True
+        from_attributes = True
