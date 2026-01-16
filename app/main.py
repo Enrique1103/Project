@@ -36,7 +36,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="Email ya registrado")
     return crud.create_user(db, user)
-
+  
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = crud.get_user_by_email(db, form_data.username)
@@ -48,8 +48,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 # --- RUTAS DE TAREAS (CRUD) ---
 
 @app.get("/tasks/", response_model=list[schemas.TaskResponse])
-def read_tasks(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return crud.get_tasks(db, user_id=current_user.id_user)
+def get_tasks(
+    status: str = None, # Parámetro opcional para filtrar
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    # Pasamos el filtro al CRUD
+    return crud.get_tasks(db=db, user_id=current_user.id_user, status=status)
 
 @app.post("/tasks/", response_model=schemas.TaskResponse)
 def create_task(task: schemas.TaskCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
