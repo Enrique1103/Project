@@ -60,3 +60,14 @@ def delete_task(db: Session, task_id: int, user_id: int):
         db.commit()
         return True
     return False
+
+def get_tasks(db: Session, user_id: int, status: str = None):
+    # 1. Empezamos la consulta filtrando por el ID del usuario logueado
+    query = db.query(models.Task).filter(models.Task.user_id == user_id)
+    
+    # 2. Si en Swagger escribes algo en 'status', lo filtramos aquí
+    if status:
+        query = query.filter(models.Task.status == status)
+        
+    # 3. Devolvemos todos los resultados encontrados
+    return query.all()
