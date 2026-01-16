@@ -1,39 +1,35 @@
-# Task Manager API - Backend Robust con FastAPI
+# Task Manager API - Robust Backend with FastAPI
 
-Este proyecto es una API REST profesional diseñada para la gestión de tareas, enfocada en la seguridad y la arquitectura limpia. Implementa autenticación robusta y una estructura de base de datos avanzada en PostgreSQL con soporte para múltiples esquemas.
+This project is a professional REST API designed for task management, focusing on security and clean architecture. It implements robust authentication and an advanced database structure in PostgreSQL with support for multiple schemas.
 
-## Características Principales
+## Key Features
 
-* **Autenticación JWT:** Sistema de Login seguro con tokens de acceso (JSON Web Tokens).
-* **Seguridad de Contraseñas:** Hasheo mediante `bcrypt` para garantizar que las credenciales nunca se guarden en texto plano.
-* **Arquitectura Limpia:** Separación estricta de responsabilidades en módulos (`models`, `schemas`, `crud`, `auth`).
-* **PostgreSQL Avanzado:** Organización mediante **Schemas** independientes para usuarios y tareas.
-* **Privacidad por Usuario:** Implementación de lógica donde cada usuario solo puede gestionar sus propias tareas.
-* **Validación de Integridad:** Restricciones de base de datos (`CHECK constraints`) para estados de tareas como `pendiente` y `completada`.
+* **JWT Authentication:** Secure login system using access tokens (JSON Web Tokens).
+* **Password Security:** Hashing via `bcrypt` to ensure credentials are never stored in plain text.
+* **Clean Architecture:** Strict separation of concerns into modules (`models`, `schemas`, `crud`, `auth`).
+* **Advanced PostgreSQL:** Organized through independent **Schemas** for users and tasks.
+* **User Privacy:** Logic implementation ensuring each user can only manage their own tasks.
+* **Integrity Validation:** Database restrictions (`CHECK constraints`) for task statuses such as `pending` and `completed`.
 
-## Stack Tecnológico
+## Tech Stack
 
-* **Lenguaje:** Python 3.9+
+* **Language:** Python 3.9+
 * **Framework:** FastAPI
 * **ORM:** SQLAlchemy
-* **Base de Datos:** PostgreSQL
-* **Seguridad:** Jose-JWT, Passlib & Bcrypt
+* **Database:** PostgreSQL
+* **Security:** Jose-JWT, Passlib & Bcrypt
 
-## Estructura del Proyecto
+## Project Structure
 
 ```text
-├── main.py          # Entry point y definición de rutas (Endpoints)
-├── auth.py          # Lógica de seguridad, hashing y generación de JWT
-├── crud.py          # Operaciones Create, Read, Update, Delete
-├── models.py        # Modelos de tablas de SQLAlchemy
-├── schemas.py       # Modelos de validación de datos Pydantic
-├── database.py      # Configuración y conexión a PostgreSQL
-├── tasks_bd.sql     # Script SQL para la creación de la estructura de DB
-└── requirements.txt # Lista de dependencias del proyecto
+├── main.py          # Entry point and route definitions (Endpoints)
+├── auth.py          # Security logic, hashing, and JWT generation
+├── crud.py          # Create, Read, Update, Delete operations
+├── models.py        # SQLAlchemy table models
+├── schemas.py       # Pydantic data validation models
+├── database.py      # PostgreSQL configuration and connection
+├── tasks_bd.sql     # SQL script for DB structure creation
+└── requirements.txt # Project dependencies list
 
-# Clonar el repositorio:
-
-git clone https://github.com/LuisEnrique/task-manager-api.git
+git clone [https://github.com/Enrique1103/task-manager-api.git](https://github.com/Enrique1103/task-manager-api.git)
 cd task-manager-api
-
-https://github.com/LuisEnrique/task-manager-api.git
