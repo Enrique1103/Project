@@ -1,5 +1,4 @@
-
--- 1. ESQUEMAS Y TABLAS (Los NOTICE son normales aquí)
+-- 1. ESQUEMAS Y TABLAS
 CREATE SCHEMA IF NOT EXISTS user_schema;
 CREATE SCHEMA IF NOT EXISTS task_schema;
 
@@ -36,19 +35,20 @@ BEGIN
 END $$;
 
 -- 3. PERMISOS
--- Nota: Asegúrate de que el nombre entre comillas sea exactamente el de tu BD
 GRANT ALL PRIVILEGES ON DATABASE "tasks_BD" TO rol_manager;
 
 GRANT ALL ON SCHEMA task_schema TO rol_manager;
 GRANT ALL ON SCHEMA user_schema TO rol_manager;
 GRANT ALL ON ALL TABLES IN SCHEMA user_schema TO rol_manager;
 GRANT ALL ON ALL TABLES IN SCHEMA task_schema TO rol_manager;
+-- permiso para usar esas secuencias (autoincrementar el id)
 GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA user_schema TO rol_manager;
 GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA task_schema TO rol_manager;
 
 GRANT CONNECT ON DATABASE "tasks_BD" TO rol_user;
 GRANT USAGE ON SCHEMA task_schema TO rol_user;
 GRANT SELECT, INSERT, UPDATE ON task_schema.tasks TO rol_user;
+-- permiso para usar esas secuencias (autoincrementar el id)
 GRANT USAGE, SELECT ON SEQUENCE task_schema.tasks_id_tasks_seq TO rol_user;
 
 -- 4. SEGURIDAD RLS
@@ -60,10 +60,13 @@ DROP POLICY IF EXISTS user_tasks_update_policy ON task_schema.tasks;
 DROP POLICY IF EXISTS insert_tasks_policy ON task_schema.tasks;
 
 CREATE POLICY user_tasks_select_policy ON task_schema.tasks
-FOR SELECT USING (user_id = current_setting('app.current_user_id')::int);
+FOR SELECT 
+USING (user_id = current_setting('app.current_user_id')::int);
 
 CREATE POLICY user_tasks_update_policy ON task_schema.tasks
-FOR UPDATE USING (user_id = current_setting('app.current_user_id')::int);
+FOR UPDATE 
+USING (user_id = current_setting('app.current_user_id')::int);
 
 CREATE POLICY insert_tasks_policy ON task_schema.tasks
-FOR INSERT WITH CHECK (user_id = current_setting('app.current_user_id')::int);
+FOR INSERT 
+WITH CHECK (user_id = current_setting('app.current_user_id')::int);
