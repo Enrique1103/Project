@@ -1,25 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from datetime import date
 from typing import Optional
 
 # --- USUARIOS ---
+
 class UserBase(BaseModel):
-    full_name: str
-    email: str
-    password_hash: str
+    full_name: str = Field(..., min_length=1, max_length=50)
+    email: EmailStr # Valida automáticamente que sea un email real
     role_name: Optional[str] = "rol_user"
 
 class UserCreate(UserBase):
-    pass
+    password_hash: str = Field(..., min_length=6) # En el registro pedimos la contraseña
 
 class UserResponse(UserBase):
     id_user: int
+
     class Config:
-        from_attributes = True
+        from_attributes = True # Esto permite a Pydantic leer modelos de SQLAlchemy
 
 # --- TAREAS ---
+
 class TaskBase(BaseModel):
-    tasks_name: str
+    tasks_name: str = Field(..., min_length=1, max_length=25)
     created: Optional[date] = None
     status: Optional[str] = "pendiente"
 
@@ -27,12 +29,14 @@ class TaskCreate(TaskBase):
     pass
 
 class TaskUpdate(BaseModel):
-    tasks_name: Optional[str] = None
+    # Todos son opcionales para permitir actualizaciones parciales (PATCH)
+    tasks_name: Optional[str] = Field(None, max_length=25)
     created: Optional[date] = None
     status: Optional[str] = None
 
 class TaskResponse(TaskBase):
     id_task: int
     user_id: int
+
     class Config:
         from_attributes = True

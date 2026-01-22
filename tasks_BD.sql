@@ -1,4 +1,4 @@
--- 1. ESQUEMAS Y TABLAS
+-- Creacion de ESQUEMAS Y TABLAS
 CREATE SCHEMA IF NOT EXISTS user_schema;
 CREATE SCHEMA IF NOT EXISTS task_schema;
 
@@ -23,50 +23,70 @@ CREATE TABLE IF NOT EXISTS task_schema.tasks(
         ON DELETE CASCADE
 );
 
--- 2. CREACIÓN DE ROLES (Evitando errores si ya existen)
+
+
+-- CREACIÓN DE ROLES (Evitando errores si ya existen)
 DO $$ 
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'rol_manager') THEN
-    CREATE ROLE rol_manager LOGIN PASSWORD 'manager';
-  END IF;
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'rol_user') THEN
-    CREATE ROLE rol_user;
-  END IF;
+    -- 1. Creando el grupo de permisos si no existe
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'group_basic_operations') THEN
+        CREATE ROLE group_basic_operations; 
+        -- Aquí podrías añadir un aviso opcional:
+        RAISE NOTICE 'Permission group "group_basic_operations" created.';
+    END IF;
+
+    -- Creando el USUARIO que se registrará (Con LOGIN)
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'rol_user') THEN
+        CREATE ROLE rol_user LOGIN PASSWORD 'manager' INHERIT;
+        RAISE NOTICE 'User "rol_user" created.';
+    END IF;
 END $$;
 
--- 3. PERMISOS
-GRANT ALL PRIVILEGES ON DATABASE "tasks_BD" TO rol_manager;
 
-GRANT ALL ON SCHEMA task_schema TO rol_manager;
-GRANT ALL ON SCHEMA user_schema TO rol_manager;
-GRANT ALL ON ALL TABLES IN SCHEMA user_schema TO rol_manager;
-GRANT ALL ON ALL TABLES IN SCHEMA task_schema TO rol_manager;
--- permiso para usar esas secuencias (autoincrementar el id)
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA user_schema TO rol_manager;
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA task_schema TO rol_manager;
 
-GRANT CONNECT ON DATABASE "tasks_BD" TO rol_user;
+-- Vinculando al usuario con su grupo de permisos
+GRANT group_basic_operations TO rol_user;
+
+
+
+-- Permiso de conexion con la Base de Datos
+GRANT CONNECT ON DATABASE "tasks_BD" TO group_basic_operations;
+
+-- PERMISOS PARA EL GRUPO (La base de lo que hará cualquier usuario)
+-- Acceso a los esquemas
 GRANT USAGE ON SCHEMA task_schema TO rol_user;
-GRANT SELECT, INSERT, UPDATE ON task_schema.tasks TO rol_user;
--- permiso para usar esas secuencias (autoincrementar el id)
-GRANT USAGE, SELECT ON SEQUENCE task_schema.tasks_id_tasks_seq TO rol_user;
+GRANT USAGE ON SCHEMA user_schema TO rol_user;
+-- Permisos de operación en las tablas para el grupo
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA task_schema TO rol_user;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA user_schema TO rol_user;
+-- Permiso para secuencias (Indispensable para que funcionen los SERIAL / IDs)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA task_schema TO rol_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA user_schema TO rol_user;
 
--- 4. SEGURIDAD RLS
+
+
+-- Activar Row Level Security (RLS) en la tabla
 ALTER TABLE task_schema.tasks ENABLE ROW LEVEL SECURITY;
 
--- Borramos las políticas si ya existen para evitar errores al re-ejecutar
-DROP POLICY IF EXISTS user_tasks_select_policy ON task_schema.tasks;
-DROP POLICY IF EXISTS user_tasks_update_policy ON task_schema.tasks;
-DROP POLICY IF EXISTS insert_tasks_policy ON task_schema.tasks;
+-- Borrando las políticas previas para permitir la re-ejecución del script sin errores
+DROP POLICY IF EXISTS politica_seleccionar_tareas ON task_schema.tasks;
+DROP POLICY IF EXISTS politica_actualizar_tareas ON task_schema.tasks;
+DROP POLICY IF EXISTS politica_insertar_tareas ON task_schema.tasks;
 
-CREATE POLICY user_tasks_select_policy ON task_schema.tasks
+-- Política de LECTURA (SELECT)
+-- El uso de ', true' hace que si la variable no existe, devuelva NULL en vez de ERROR.
+CREATE POLICY politica_seleccionar_tareas ON task_schema.tasks
 FOR SELECT 
-USING (user_id = current_setting('app.current_user_id')::int);
+USING (user_id = current_setting('app.current_user_id', true)::int);
 
-CREATE POLICY user_tasks_update_policy ON task_schema.tasks
+-- 2. Política de ACTUALIZACIÓN (UPDATE)
+-- Solo permite modificar filas que ya pertenecen al usuario.
+CREATE POLICY politica_actualizar_tareas ON task_schema.tasks
 FOR UPDATE 
-USING (user_id = current_setting('app.current_user_id')::int);
+USING (user_id = current_setting('app.current_user_id', true)::int);
 
-CREATE POLICY insert_tasks_policy ON task_schema.tasks
+-- 3. Política de INSERCIÓN (INSERT)
+-- El WITH CHECK valida que el user_id de la nueva tarea coincida con el usuario de la sesión.
+CREATE POLICY politica_insertar_tareas ON task_schema.tasks
 FOR INSERT 
-WITH CHECK (user_id = current_setting('app.current_user_id')::int);
+WITH CHECK (user_id = current_setting('app.current_user_id', true)::int);

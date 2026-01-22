@@ -20,8 +20,7 @@ class Task(Base):
     __tablename__ = "tasks"
     __table_args__ = {"schema": "task_schema"}
 
-    # OJO: En tu SQL pusiste 'id_tasks' (plural). 
-    # Para que SQLAlchemy sea feliz, asegúrate que coincida:
+  
     id_task = Column(Integer, primary_key=True, index=True) 
     tasks_name = Column(String(25), nullable=False)
     created = Column(Date)
