@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base 
 
 class User(Base):
+    # Configuración de Tabla Declarativa
     __tablename__ = "users"
     __table_args__ = {"schema": "user_schema"}
 
@@ -17,6 +18,7 @@ class User(Base):
 
 
 class Task(Base):
+    # Configuración de Tabla Declarativa
     __tablename__ = "tasks"
     __table_args__ = {"schema": "task_schema"}
 
@@ -24,9 +26,8 @@ class Task(Base):
     id_task = Column(Integer, primary_key=True, index=True) 
     tasks_name = Column(String(25), nullable=False)
     created = Column(Date)
-    status = Column(Text, default="pendiente")
-    
-    # Referencia correcta al esquema y tabla de usuarios
+    status = Column(String(20), nullable=True, default="pendiente")
+    # Referencia al esquema y tabla de usuarios
     user_id = Column(Integer, ForeignKey("user_schema.users.id_user", ondelete="CASCADE", onupdate="CASCADE"))
 
     # Relación inversa

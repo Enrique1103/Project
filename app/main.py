@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -66,15 +67,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 # --- RUTAS DE TAREAS (CRUD) ---
 
-@app.get("/tasks/", response_model=list[schemas.TaskResponse])
-def read_tasks(
-    status: str = None, 
-    current_user: models.User = Depends(get_current_user), 
-    db: Session = Depends(get_db)
-):
-    """Obtiene las tareas del usuario actual. Filtro opcional por estado."""
-    return crud.get_tasks(db, user_id=current_user.id_user, status=status)
-
 @app.post("/tasks/", response_model=schemas.TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task(
     task: schemas.TaskCreate, 
@@ -82,6 +74,17 @@ def create_task(
     db: Session = Depends(get_db)
 ):
     return crud.create_task(db, task, user_id=current_user.id_user)
+
+
+@app.get("/tasks/", response_model=list[schemas.TaskResponse])
+def read_tasks(
+    status: Optional[schemas.TaskStatus] = None, 
+    current_user: models.User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    """Obtiene las tareas del usuario actual. Filtro opcional por estado."""
+    return crud.get_tasks(db, user_id=current_user.id_user, status=status)
+
 
 @app.put("/tasks/{id_task}", response_model=schemas.TaskResponse)
 def update_task(

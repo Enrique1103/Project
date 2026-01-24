@@ -1,9 +1,14 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import date
 from typing import Optional
+from enum import Enum
+
+# --- ENUMS ---
+class TaskStatus(str, Enum):
+    pendiente = "pendiente"
+    completada = "completada"
 
 # --- USUARIOS ---
-
 class UserBase(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=50)
     email: EmailStr # Valida automáticamente que sea un email real
@@ -19,21 +24,18 @@ class UserResponse(UserBase):
         from_attributes = True # Esto permite a Pydantic leer modelos de SQLAlchemy
 
 # --- TAREAS ---
-
 class TaskBase(BaseModel):
     tasks_name: str = Field(..., min_length=1, max_length=25)
     created: Optional[date] = None
-    status: Optional[str] = "pendiente"
+    status: Optional[TaskStatus] = TaskStatus.pendiente
 
 class TaskCreate(TaskBase):
     pass
-
 class TaskUpdate(BaseModel):
     # Todos son opcionales para permitir actualizaciones parciales (PATCH)
     tasks_name: Optional[str] = Field(None, max_length=25)
     created: Optional[date] = None
-    status: Optional[str] = None
-
+    status: Optional[TaskStatus] = None
 class TaskResponse(TaskBase):
     id_task: int
     user_id: int
